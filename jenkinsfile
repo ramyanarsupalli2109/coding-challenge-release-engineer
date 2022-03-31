@@ -1,23 +1,30 @@
-node {
-    stage('SCM Checkout') { // for display purposes
-        // Get some code from a GitHub repository
-       git credentialsId: 'githubcredential', url: 'https://github.com/ramyanarsupalli2109/coding-challenge-release-engineer.git'
-    }
-    stage('Maven Compile') { // for display purposes
-        // Get some code from a GitHub repository
-       def mvnHome = tool name: 'M3', type: 'maven'
-	   def mvnCMD = "${mvnHome}/bin/mvn"
-	   sh "${mvnCMD} package"
-	} 
-    stage('Mvn Package') { // for display purposes
-        // Get some code from a GitHub repository
-       def mvnHome = tool name: 'M3', type: 'maven'
-	   def mvnCMD = "${mvnHome}/bin/mvn"
-	   sh "${mvnCMD} clean package"
-	}   
+pipeline {
 
-    stage('Build Docker Image') { // for display purposes
-       sh 'docker build -t Dockerfile .'
-	}   
-	
+    agent any
+    stages {
+               
+        stage('Code Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'githubcredential']]])
+            }
+        }
+
+        stage('Code Build') {
+            steps {
+                  def mvnHome = tool name: 'M3', type: 'maven'
+	              def mvnCMD = "${mvnHome}/bin/mvn"
+	              sh "${mvnCMD} package"
+            }
+        }
+
+        stage('Code Test') {
+            steps {
+                  def mvnHome = tool name: 'M3', type: 'maven'
+	              def mvnCMD = "${mvnHome}/bin/mvn"
+	              sh "${mvnCMD} test"
+               
+            }
+        }
+
+    }   
 }
